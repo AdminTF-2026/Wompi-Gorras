@@ -1,9 +1,8 @@
-+import express from "express";
-+import cors from "cors";
-+import crypto from "crypto";
++const express = require("express");
++const cors = require("cors");
++const crypto = require("crypto");
 +
 +const app = express();
-+
 +app.use(cors());
 +app.use(express.json());
 +
@@ -20,9 +19,9 @@
 +
 +    const { amountInCents, currency, reference } = req.body || {};
 +    if (!amountInCents || !currency || !reference) {
-+      return res
-+        .status(400)
-+        .json({ error: "amountInCents, currency, reference are required" });
++      return res.status(400).json({
++        error: "amountInCents, currency, reference are required"
++      });
 +    }
 +
 +    const signatureBase = `${amountInCents}${currency}${reference}`;
@@ -36,12 +35,12 @@
 +      reference,
 +      amountInCents,
 +      currency,
-+      publicKey: WOMPI_PUBLIC_KEY,
++      publicKey: WOMPI_PUBLIC_KEY
 +    });
 +  } catch (e) {
 +    return res.status(500).json({
 +      error: "signature_error",
-+      details: String(e?.message || e),
++      details: String(e && e.message ? e.message : e)
 +    });
 +  }
 +});
