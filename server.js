@@ -1,6 +1,6 @@
-+import express from "express";
-+import cors from "cors";
-+import crypto from "crypto";
++const express = require("express");
++const cors = require("cors");
++const crypto = require("crypto");
 +
 +const app = express();
 +app.use(cors());
@@ -19,17 +19,19 @@
 +
 +    const { amountInCents, currency, reference } = req.body || {};
 +    if (!amountInCents || !currency || !reference) {
-+      return res.status(400).json({ error: "amountInCents, currency, reference are required" });
++      return res
++        .status(400)
++        .json({ error: "amountInCents, currency, reference are required" });
 +    }
 +
-+    // Base común (ajústalo si Wompi te pide otro formato exacto según tu integración)
++    // Base simple (ajusta si tu backend Wompi requiere otro esquema exacto)
 +    const signatureBase = `${amountInCents}${currency}${reference}`;
 +    const signature = crypto
 +      .createHmac("sha256", WOMPI_PRIVATE_KEY)
 +      .update(signatureBase)
 +      .digest("hex");
 +
-+    res.json({
++    return res.json({
 +      signature,
 +      reference,
 +      amountInCents,
@@ -37,7 +39,10 @@
 +      publicKey: WOMPI_PUBLIC_KEY
 +    });
 +  } catch (e) {
-+    res.status(500).json({ error: "signature_error", details: String(e?.message || e) });
++    return res.status(500).json({
++      error: "signature_error",
++      details: String(e && e.message ? e.message : e)
++    });
 +  }
 +});
 +
