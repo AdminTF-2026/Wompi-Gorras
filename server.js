@@ -8,9 +8,24 @@ const PORT = process.env.PORT || 3000;
 
 // ─── MIDDLEWARES ───────────────────────────────────────────────────────────────
 app.use(express.json());
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,       // ej: https://pruebas.multiproyecto.com
+  'http://localhost',
+  'http://127.0.0.1',
+  'null',                         // about:blank y archivos locales (file://)
+].filter(Boolean);
+
 app.use(cors({
-  // Cambia esto por la URL real de tu landing page en producción
-  origin: process.env.FRONTEND_URL || '*',
+  origin: function (origin, callback) {
+    // Permite peticiones sin origin (Postman, curl, etc.) y orígenes en la lista
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`⚠️ CORS bloqueado para origen: ${origin}`);
+      callback(new Error(`Origen no permitido por CORS: ${origin}`));
+    }
+  },
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
 }));
@@ -22,7 +37,7 @@ app.get('/', (req, res) => {
 
 // ─── ENDPOINT: FIRMA DE INTEGRIDAD WOMPI ──────────────────────────────────────
 // El frontend llama a POST /api/wompi/signature con { amountInCents, currency, reference }
-// El backend responde con la firma SHA256 calculada con la clave privada de Wompi
+// El backend responde con la firma SHA256 calculada con la clave de integridad de Wompi
 app.post('/api/wompi/signature', async (req, res) => {
   const { amountInCents, currency, reference } = req.body;
 
